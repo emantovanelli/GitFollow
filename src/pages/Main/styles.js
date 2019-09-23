@@ -31,6 +31,7 @@ export const Input = styled.TextInput.attrs({
   font-size: 16px;
   color: #333;
   background: #fff;
+  border: 2px solid ${props => (props.error ? '#FF7272' : '#FFF')};
 `;
 export const Submit = styled.TouchableOpacity`
   background: #6bd4c1;

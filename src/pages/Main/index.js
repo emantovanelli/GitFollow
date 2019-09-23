@@ -1,4 +1,6 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+
+import {Keyboard} from 'react-native';
 
 import api from '~/services/api';
 import getRealm from '~/services/realm';
@@ -11,6 +13,19 @@ import {Container, Title, Form, Input, Submit, List} from './styles';
 
 export default function Main() {
   const [input, setInput] = useState('');
+  const [error, setError] = useState(false);
+  const [repositories, setRepositories] = useState([]);
+
+  useEffect(() => {
+    async function loadRepositories() {
+      const realm = await getRealm();
+      const data = realm.objects('Repository').sorted('stars', true);
+
+      setRepositories(data);
+    }
+
+    loadRepositories();
+  }, []);
 
   async function saveRepository(repository) {
     const data = {
@@ -35,7 +50,10 @@ export default function Main() {
       const response = await api.get(`/repos/${input}`);
       await saveRepository(response.data);
       setInput('');
+      setError(false);
+      Keyboard.dismiss();
     } catch (err) {
+      setError(true);
       console.tron.warn('Erro: ' + err);
     }
   }
@@ -46,6 +64,7 @@ export default function Main() {
       <Form>
         <Input
           value={input}
+          error={error}
           onChangeText={setInput}
           autoCaptalize="none"
           autoCorrect={false}
@@ -57,16 +76,7 @@ export default function Main() {
       </Form>
       <List
         keyboardShouldPersistTaps="handled"
-        data={[
-          {
-            id: 1,
-            name: 'unform',
-            description:
-              'uSADIDASuiDSAUHDASUHuSADIDASuiDSAUHDASUHuSADIDASuiDSAUHDASUHuSADIDASuiDSAUHDASUHuSADIDASuiDSAUHDASUH',
-            stars: 1234,
-            forks: 321,
-          },
-        ]}
+        data={repositories}
         keyExtractor={item => String(item.id)}
         renderItem={({item}) => <Repository data={item} />}
       />
